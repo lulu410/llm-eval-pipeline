@@ -10,3 +10,6 @@ Aligned with **NIST AI RMF** and **U.S. EO 14110** for trustworthy AI.
 ## Quick Run (placeholder)
 ```bash
 python examples/reproducibility_report.py
+
+For detailed policy alignment, see [docs/policy_alignment.md](docs/policy_alignment.md).
+
