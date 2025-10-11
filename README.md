@@ -1,7 +1,5 @@
-# llm-eval-pipeline
-Independent, policy-aligned LLM evaluation pipeline — reproducibility &amp; latency variance with verifiable artifacts (NIST AI RMF, EO 14110).
-
 # LLM Evaluation Pipeline
+Independent, policy-aligned LLM evaluation pipeline — reproducibility &amp; latency variance with verifiable artifacts (NIST AI RMF, EO 14110).
 
 Open-source, reproducible evaluation for LLM reliability.  
 Metrics: **reproducibility** and **latency variance**.  
