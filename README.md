@@ -1,5 +1,7 @@
 # LLM Evaluation Pipeline
 Independent, policy-aligned LLM evaluation pipeline — reproducibility &amp; latency variance with verifiable artifacts (NIST AI RMF, EO 14110).
+[![DOI](https://zenodo.org/badge/1074443594.svg)](https://doi.org/10.5281/zenodo.17344626)
+
 
 Open-source pipeline for **reliable, reproducible** LLM evaluation with deterministic metrics and audit-friendly artifacts.
 
