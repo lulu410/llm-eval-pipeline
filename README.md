@@ -1,20 +1,15 @@
-# llm-eval-pipeline
-Independent, policy-aligned LLM evaluation pipeline — reproducibility &amp; latency variance with verifiable artifacts (NIST AI RMF, EO 14110).
-
 # LLM Evaluation Pipeline
 
-Open-source, reproducible evaluation for LLM reliability.  
-Metrics: **reproducibility** and **latency variance**.  
-Aligned with **NIST AI RMF** and **U.S. EO 14110** for trustworthy AI.
+Open-source pipeline for **reliable, reproducible** LLM evaluation with deterministic metrics and audit-friendly artifacts.
+
+- **Deterministic:** Results depend only on `config.yaml` + `examples/input.jsonl` (no external APIs).
+- **Reproducibility metrics:** Majority-label consistency across repeated runs.
+- **Latency variance:** Stability via stdev/mean ratio.
+- **Provenance:** SHA256 fingerprints for input/config; structured logs for audit.
+- **Policy alignment:** NIST AI RMF (Govern/Map/Measure/Manage) & U.S. EO 14110.
 
 # Quick Start
-```bash
-python examples/reproducibility_report.py
-```
-
 For detailed policy alignment, see [docs/policy_alignment.md](docs/policy_alignment.md).
-
-
 
 ## 🧪 Run and Verify the Evaluation Pipeline
 
@@ -27,25 +22,22 @@ git clone https://github.com/lulu410/llm-eval-pipeline.git
 cd llm-eval-pipeline
 ````
 
-You should now see folders like:
-
-```
-examples/  docs/  data/  contact/  README.md
-```
-
 
 ### 2. Execute the example script
 
-Run the demo evaluation:
+Run the evaluation:
 
 ```bash
-python3 examples/reproducibility_report.py
+python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python main.py --config config.yaml
 ```
 
 If successful, the console will print:
 
 ```
-[✓] Saved reproducibility metrics to data/results/example_summary.json
+[✓] Wrote results to data/results/results.json
+[i] Log at data/results/run.log
 ```
 
 
@@ -54,19 +46,28 @@ If successful, the console will print:
 Open the result file with:
 
 ```bash
-cat data/results/example_summary.json
+cat data/results/results.json
 ```
 
 Expected output:
 
 ```json
 {
-  "latency_mean_ms": 101.7,
-  "latency_stdev_ms": 3.8,
-  "latency_variance_ratio": 0.037,
+  "timestamp_utc": "2025-10-13T12:00:00Z",
+  "seed": 20251012,
+  "runs": 10,
+  "num_prompts": 3,
+  "latency_mean_ms": 104.9,
+  "latency_stdev_ms": 2.725,
+  "latency_variance_ratio": 0.026,
+  "variance_threshold": 0.05,
+  "variance_pass": true,
+  "reproducibility_score": 0.933,
+  "reproducibility_threshold": 0.9,
   "reproducibility_pass": true,
-  "timestamp": "2025-10-11T18:40:30Z",
-  "runtime_sec": 0.004
+  "input_sha256": "55f0fd8f8ab49ea8ef68b7cbfd1d269b994ac518d5f8833dbcd79600105d033d",
+  "config_sha256": "5df99603ac9d594b68d2e681831132ea4a6b9a397bd8424126849b5d2ac1a6f1",
+  "system": { "python": "3.11.9", "platform": "darwin" }
 }
 ```
 
@@ -74,16 +75,13 @@ This confirms the pipeline **successfully simulated an evaluation**, computed la
 
 ---
 
-### 4. Verify reproducibility
+### 4. Reproducibility
 
-Run the same command again:
+- Deterministic generation: labels & latencies are derived from `SHA256(seed|prompt|run_idx)` — no external APIs.
 
-```bash
-python3 examples/reproducibility_report.py
-```
+- Provenance embedded: `input_sha256` and `config_sha256` are written into `results.json`.
 
-Compare the two runs in `data/results/` —
-the `latency_variance_ratio` should stay within **±5%**, showing consistent reproducibility.
+- Single-source config: changing `config.yaml` is the only way to change outcomes.
 
 ---
 
@@ -93,11 +91,17 @@ the `latency_variance_ratio` should stay within **±5%**, showing consistent rep
 llm-eval-pipeline/
 ├── README.md
 ├── LICENSE
+├── config.yaml
+├── main.py
+├── requirements.txt
 ├── examples/
+│   ├── input.jsonl
 │   └── reproducibility_report.py
 ├── data/
 │   └── results/
-│       └── example_summary.json
+│       ├── example_summary.json
+│       ├── results.json
+│       └── run.log
 ├── docs/
 │   └── policy_alignment.md
 └── contact/
@@ -120,16 +124,16 @@ python3 examples/reproducibility_report.py
 
 | Step             | What to Check               | Expected Result                        |
 | ---------------- | --------------------------- | -------------------------------------- |
-| Script execution | Runs without error          | `[✓] Saved reproducibility metrics...` |
+| Script execution | Runs without error          | `[✓] Wrote results to data/results/...` |
 | Output file      | Exists in `data/results/`   | `example_summary.json`                 |
 | JSON validity    | File contains key metrics   | mean, stdev, variance ratio            |
 | Repeatability    | 2nd run within ±5% variance | `reproducibility_pass = true`          |
 
 ---
 
-### 🧠 Why This Matters
-
-These steps ensure the repository is **verifiable, reproducible, and policy-aligned**,
-supporting the principles of the **NIST AI Risk Management Framework (AI RMF)**
-and **U.S. Executive Order 14110 on Safe and Trustworthy AI**.
-
+### Policy reference
+Designed in line with **U.S. Executive Order 14110** and the **NIST AI Risk Management Framework (AI RMF 1.0)**:
+- Govern — transparent configs, artifact fingerprints, audit logs
+- Map — explicit evaluation context (seed, runs, input set)
+- Measure — reproducibility & latency variance with thresholds
+- Manage — repeatable runs for drift checks and CI quality gates

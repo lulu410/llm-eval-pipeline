@@ -1,0 +1,10 @@
+# Single source of truth for reproducible runs.
+# Same config + same input.jsonl => same results.json across machines.
+
+seed: 20251013                  # Controls deterministic label & latency generation
+runs: 10                        # Repeated trials per prompt (stability estimate)
+variance_threshold: 0.05        # Pass if stdev/mean < 0.05
+reproducibility_threshold: 0.90 # Pass if majority-label rate >= 0.90
+input_path: examples/input.jsonl
+output_dir: data/results
+
