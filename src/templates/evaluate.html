@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluate Submission - LLM Evaluation Pipeline{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-play-circle"></i> Evaluate Submission
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Submission Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success mb-4">
+                    <h6><i class="fas fa-magic"></i> Multimodal Evaluation Ready!</h6>
+                    <p class="mb-2">This system supports comprehensive multimodal evaluation combining:</p>
+                    <ul class="mb-0">
+                        <li><strong>Text analysis</strong> - Stories, descriptions, essays</li>
+                        <li><strong>Image understanding</strong> - Photos, illustrations, visual content</li>
+                        <li><strong>Video processing</strong> - Motion content and visual narratives</li>
+                        <li><strong>Audio analysis</strong> - Sound effects, music, speech</li>
+                    </ul>
+                </div>
+                <form id="evaluationForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="rubric_select" class="form-label">Select Rubric *</label>
+                        <select class="form-select" id="rubric_select" name="rubric_id" required>
+                            <option value="">Choose a rubric...</option>
+                            {% for rubric in rubrics %}
+                            <option value="{{ rubric.id }}">{{ rubric.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="text_content" class="form-label">Text Content</label>
+                        <textarea class="form-control" id="text_content" name="text_content" rows="6" 
+                                  placeholder="Enter text content to evaluate..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="files" class="form-label">
+                            <i class="fas fa-images"></i> Multimodal Media Files
+                        </label>
+                        <input type="file" class="form-control" id="files" name="files" multiple 
+                               accept="image/*,video/*,audio/*">
+                        <div class="form-text">
+                            <strong>Multimodal Support:</strong> Upload images (JPG, PNG), videos (MP4, MOV), or audio files (MP3, WAV) for comprehensive AI evaluation.
+                        </div>
+                        <div class="alert alert-info mt-2">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Supported formats:</strong><br>
+                            • Images: JPG, PNG, GIF, SVG<br>
+                            • Videos: MP4, MOV, AVI<br>
+                            • Audio: MP3, WAV, M4A
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="model_provider" class="form-label">
+                            <i class="fas fa-brain"></i> AI Model Selection
+                        </label>
+                        <select class="form-select" id="model_provider" name="model_provider">
+                            <option value="deterministic">Deterministic (Reproducible Baseline)</option>
+                            <option value="openai">🤖 OpenAI GPT-4V (Multimodal AI)</option>
+                            <option value="google_gemini">🤖 Google Gemini Pro Vision (Multimodal AI)</option>
+                        </select>
+                        <div class="form-text">
+                            <strong>Multimodal Models:</strong> GPT-4V and Gemini Pro Vision can analyze both text and visual content together
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-play"></i> Start Evaluation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Evaluation Status</h5>
+            </div>
+            <div class="card-body">
+                <div id="statusArea">
+                    <p class="text-muted">Ready to evaluate submission. Fill out the form and click "Start Evaluation".</p>
+                </div>
+                <div id="resultArea" style="display: none;">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('evaluationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const rubricId = formData.get('rubric_id');
+    
+    if (!rubricId) {
+        showAlert('Please select a rubric', 'warning');
+        return;
+    }
+    
+    // Update status
+    const statusArea = document.getElementById('statusArea');
+    const resultArea = document.getElementById('resultArea');
+    
+    statusArea.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+            <span>Evaluating submission...</span>
+        </div>
+    `;
+    resultArea.style.display = 'none';
+    
+    try {
+        // Create submission via API
+        const submissionResponse = await fetch('/api/submissions', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!submissionResponse.ok) {
+            throw new Error('Failed to create submission');
+        }
+        
+        const submission = await submissionResponse.json();
+        
+        // Start evaluation
+        const evaluationData = {
+            submission: submission,
+            model_provider: formData.get('model_provider') || 'deterministic',
+            config: {}
+        };
+        
+        const evaluationResponse = await fetch('/api/evaluate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(evaluationData)
+        });
+        
+        if (!evaluationResponse.ok) {
+            throw new Error('Evaluation failed');
+        }
+        
+        const result = await evaluationResponse.json();
+        
+        // Display results
+        statusArea.innerHTML = '<p class="text-success"><i class="fas fa-check-circle"></i> Evaluation completed!</p>';
+        resultArea.style.display = 'block';
+        resultArea.innerHTML = `
+            <div class="alert alert-${result.passed ? 'success' : 'warning'}" role="alert">
+                <h6 class="alert-heading">
+                    Overall Score: <strong>${result.overall_score.toFixed(2)}/10</strong>
+                    <span class="badge bg-${result.passed ? 'success' : 'danger'} ms-2">
+                        ${result.passed ? 'PASSED' : 'FAILED'}
+                    </span>
+                </h6>
+                <p class="mb-2">Processing time: ${result.processing_time_ms}ms</p>
+                <hr>
+                <h6>Criterion Scores:</h6>
+                ${result.criterion_scores.map(score => `
+                    <div class="mb-2">
+                        <strong>${score.criterion_name}:</strong> ${score.score.toFixed(2)}/10
+                        <br><small class="text-muted">${score.feedback}</small>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Evaluation error:', error);
+        statusArea.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        resultArea.style.display = 'none';
+    }
+});
+
+// Update rubric description when selected
+document.getElementById('rubric_select').addEventListener('change', function() {
+    const rubricId = this.value;
+    if (rubricId) {
+        fetch(`/api/rubrics/${rubricId}`)
+            .then(response => response.json())
+            .then(rubric => {
+                // You could show rubric details here if needed
+                console.log('Selected rubric:', rubric.name);
+            })
+            .catch(error => {
+                console.error('Error fetching rubric:', error);
+            });
+    }
+});
+</script>
+{% endblock %}

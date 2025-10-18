@@ -1,0 +1,30 @@
+{
+  "id": "multilingual_content_review",
+  "name": "Multilingual Content Assessment",
+  "description": "Comprehensive evaluation for multilingual submissions with cultural sensitivity analysis. Designed for government documentation review processes.",
+  "criteria": [
+    {
+      "name": "Language Clarity",
+      "description": "Content is clear and understandable in the submitted language",
+      "weight": 0.4,
+      "threshold": 6.5,
+      "category": "communication"
+    },
+    {
+      "name": "Cultural Sensitivity",
+      "description": "Content demonstrates appropriate cultural awareness",
+      "weight": 0.3,
+      "threshold": 6.0,
+      "category": "cultural"
+    },
+    {
+      "name": "Translation Accuracy",
+      "description": "If translated, maintains meaning and accuracy",
+      "weight": 0.3,
+      "threshold": 7.0,
+      "category": "accuracy"
+    }
+  ],
+  "created_at": "2025-10-18T18:39:26.851088",
+  "updated_at": "2025-10-18T18:39:26.851090"
+}

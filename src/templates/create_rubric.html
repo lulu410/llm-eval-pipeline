@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Create Rubric - LLM Evaluation Pipeline{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-plus-circle"></i> Create New Rubric
+        </h1>
+    </div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger" role="alert">
+    <i class="fas fa-exclamation-triangle"></i> Error: {{ error }}
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post" action="/rubrics/create" id="rubricForm">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Rubric Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="rubric_id" class="form-label">Rubric ID *</label>
+                        <input type="text" class="form-control" id="rubric_id" name="rubric_id" required
+                               placeholder="e.g., creative_writing_basic">
+                        <div class="form-text">Unique identifier for this rubric (no spaces, use underscores)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Rubric Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" required
+                               placeholder="e.g., Creative Writing Basic Evaluation">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description *</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required
+                                  placeholder="Describe what this rubric is designed to evaluate..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Evaluation Criteria</h5>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addCriterion()">
+                        <i class="fas fa-plus"></i> Add Criterion
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="criteriaContainer">
+                        <!-- Criteria will be added here dynamically -->
+                    </div>
+                    <div class="alert alert-info" id="weightWarning" style="display: none;">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Warning:</strong> The sum of criterion weights must equal 1.0.
+                        <span id="currentWeight">Current total: 0.0</span>
+                    </div>
+                    <input type="hidden" id="criteria_data" name="criteria_data" value="[]">
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-save"></i> Create Rubric
+                </button>
+                <a href="/rubrics" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Help & Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <h6>Creating Effective Rubrics</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Keep criteria clear and specific</li>
+                    <li><i class="fas fa-check text-success"></i> Use appropriate thresholds (0-10 scale)</li>
+                    <li><i class="fas fa-check text-success"></i> Ensure weights sum to 1.0</li>
+                    <li><i class="fas fa-check text-success"></i> Provide detailed descriptions</li>
+                </ul>
+                
+                <h6 class="mt-3">Example Categories</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-lightbulb text-warning"></i> Creativity & Originality</li>
+                    <li><i class="fas fa-language text-info"></i> Clarity & Communication</li>
+                    <li><i class="fas fa-cog text-primary"></i> Technical Quality</li>
+                    <li><i class="fas fa-target text-success"></i> Task Fulfillment</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let criterionCounter = 0;
+let criteria = [];
+
+function addCriterion() {
+    criterionCounter++;
+    const template = `
+        <div class="criterion-item" id="criterion-${criterionCounter}">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Criterion Name</label>
+                    <input type="text" class="form-control criterion-name" 
+                           placeholder="e.g., Clarity" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Weight</label>
+                    <input type="number" class="form-control criterion-weight" 
+                           min="0" max="1" step="0.1" placeholder="0.3" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Threshold</label>
+                    <input type="number" class="form-control criterion-threshold" 
+                           min="0" max="10" step="0.1" placeholder="6.0" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Category</label>
+                    <input type="text" class="form-control criterion-category" 
+                           placeholder="e.g., Communication" required>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" class="btn btn-danger btn-sm d-block" 
+                            onclick="removeCriterion(${criterionCounter})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-2">
+                <label class="form-label">Description</label>
+                <textarea class="form-control criterion-description" rows="2" required
+                          placeholder="Describe what this criterion evaluates in detail..."></textarea>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('criteriaContainer').insertAdjacentHTML('beforeend', template);
+    updateCriteriaData();
+}
+
+function removeCriterion(id) {
+    document.getElementById(`criterion-${id}`).remove();
+    updateCriteriaData();
+}
+
+function updateCriteriaData() {
+    criteria = [];
+    const containers = document.querySelectorAll('.criterion-item');
+    
+    containers.forEach(container => {
+        const name = container.querySelector('.criterion-name').value;
+        const description = container.querySelector('.criterion-description').value;
+        const weight = parseFloat(container.querySelector('.criterion-weight').value) || 0;
+        const threshold = parseFloat(container.querySelector('.criterion-threshold').value) || 0;
+        const category = container.querySelector('.criterion-category').value;
+        
+        if (name && description && category) {
+            criteria.push({
+                name: name,
+                description: description,
+                weight: weight,
+                threshold: threshold,
+                category: category
+            });
+        }
+    });
+    
+    // Update hidden input
+    document.getElementById('criteria_data').value = JSON.stringify(criteria);
+    
+    // Check weight sum
+    const totalWeight = criteria.reduce((sum, c) => sum + c.weight, 0);
+    const warning = document.getElementById('weightWarning');
+    const currentWeight = document.getElementById('currentWeight');
+    
+    if (Math.abs(totalWeight - 1.0) > 0.001 && criteria.length > 0) {
+        warning.style.display = 'block';
+        currentWeight.textContent = `Current total: ${totalWeight.toFixed(1)}`;
+    } else {
+        warning.style.display = 'none';
+    }
+}
+
+// Add event listeners for weight changes
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('criterion-weight') || 
+        e.target.classList.contains('criterion-name') ||
+        e.target.classList.contains('criterion-description') ||
+        e.target.classList.contains('criterion-threshold') ||
+        e.target.classList.contains('criterion-category')) {
+        updateCriteriaData();
+    }
+});
+
+// Form validation
+document.getElementById('rubricForm').addEventListener('submit', function(e) {
+    const totalWeight = criteria.reduce((sum, c) => sum + c.weight, 0);
+    if (criteria.length === 0) {
+        e.preventDefault();
+        alert('Please add at least one criterion.');
+        return;
+    }
+    if (Math.abs(totalWeight - 1.0) > 0.001) {
+        e.preventDefault();
+        alert(`The sum of weights must equal 1.0. Current total: ${totalWeight.toFixed(1)}`);
+        return;
+    }
+});
+
+// Add first criterion automatically
+document.addEventListener('DOMContentLoaded', function() {
+    addCriterion();
+});
+</script>
+{% endblock %}

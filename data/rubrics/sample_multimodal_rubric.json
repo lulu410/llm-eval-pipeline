@@ -1,0 +1,30 @@
+{
+  "id": "sample_multimodal_rubric",
+  "name": "Sample Multimodal Evaluation Rubric",
+  "description": "A comprehensive rubric for evaluating multimodal creative works including text, images, and video",
+  "criteria": [
+    {
+      "name": "Creativity",
+      "description": "Evaluates originality and innovative thinking",
+      "weight": 0.3,
+      "threshold": 6.0,
+      "category": "creativity"
+    },
+    {
+      "name": "Clarity",
+      "description": "Assesses clear communication and understanding",
+      "weight": 0.4,
+      "threshold": 7.0,
+      "category": "communication"
+    },
+    {
+      "name": "Technical Quality",
+      "description": "Evaluates technical execution and craftsmanship",
+      "weight": 0.3,
+      "threshold": 5.0,
+      "category": "technical"
+    }
+  ],
+  "created_at": "2025-10-18 18:03:08.416261",
+  "updated_at": "2025-10-18 18:03:08.416436"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "immigration_document_review",
+  "name": "Immigration Document Completeness Review",
+  "description": "Government-grade rubric for evaluating immigration application documents. Ensures compliance with USCIS requirements and maintains audit trails per NIST AI RMF guidelines.",
+  "criteria": [
+    {
+      "name": "Required Fields Present",
+      "description": "All mandatory fields are completed and legible",
+      "weight": 0.4,
+      "threshold": 8.0,
+      "category": "completeness"
+    },
+    {
+      "name": "Document Quality",
+      "description": "Documents are clear, properly formatted, and readable",
+      "weight": 0.3,
+      "threshold": 7.0,
+      "category": "quality"
+    },
+    {
+      "name": "Information Consistency",
+      "description": "Information across documents is consistent and matches",
+      "weight": 0.3,
+      "threshold": 7.5,
+      "category": "consistency"
+    }
+  ],
+  "created_at": "2025-10-18T18:39:26.850019",
+  "updated_at": "2025-10-18T18:39:26.850208"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "creative_writing_basic",
+  "name": "Creative Writing Basic Evaluation",
+  "description": "This rubric evaluates creative writing submissions including short stories, poems, and narrative pieces. It assesses originality, narrative structure, character development, language use, and overall literary merit. Suitable for creative writing competitions, educational assessments, and literary contests.",
+  "criteria": [
+    {
+      "name": "Creativity",
+      "description": "Evaluates originality, innovative ideas, unique voice, and creative thinking demonstrated in the submission",
+      "weight": 1.0,
+      "threshold": 6.0,
+      "category": "creativity"
+    }
+  ],
+  "created_at": "2025-10-18T18:20:48.512431",
+  "updated_at": "2025-10-18T18:20:48.512436"
+}

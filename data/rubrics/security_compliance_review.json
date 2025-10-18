@@ -1,0 +1,30 @@
+{
+  "id": "security_compliance_review",
+  "name": "Security & Compliance Assessment",
+  "description": "Government-grade security evaluation ensuring NIST AI RMF compliance and U.S. EO 14110 adherence. Maintains complete audit trails and provenance verification.",
+  "criteria": [
+    {
+      "name": "Data Integrity",
+      "description": "Submission maintains data integrity and authenticity",
+      "weight": 0.4,
+      "threshold": 8.0,
+      "category": "security"
+    },
+    {
+      "name": "Access Control",
+      "description": "Proper authorization and access controls applied",
+      "weight": 0.3,
+      "threshold": 7.5,
+      "category": "compliance"
+    },
+    {
+      "name": "Audit Trail",
+      "description": "Complete audit trail maintained throughout process",
+      "weight": 0.3,
+      "threshold": 8.5,
+      "category": "audit"
+    }
+  ],
+  "created_at": "2025-10-18T18:39:26.851323",
+  "updated_at": "2025-10-18T18:39:26.851324"
+}

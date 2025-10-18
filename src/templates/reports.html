@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - LLM Evaluation Pipeline{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-chart-bar"></i> Evaluation Reports
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Generated Reports</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">View and download evaluation reports in various formats (JSON, PDF, CSV).</p>
+                
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> Reports are generated after completing evaluations. 
+                    Use the <a href="/evaluate">evaluation interface</a> to create submissions and generate reports.
+                </div>
+                
+                <div id="reportsList">
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Reports Available</h5>
+                        <p class="text-muted">No evaluation reports have been generated yet.</p>
+                        <a href="/evaluate" class="btn btn-primary">
+                            <i class="fas fa-play"></i> Start Evaluation
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Report Export Options</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center p-3 border rounded">
+                            <i class="fas fa-file-code fa-2x text-primary mb-2"></i>
+                            <h6>JSON Format</h6>
+                            <p class="text-muted small">Machine-readable format with full metadata and provenance</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 border rounded">
+                            <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                            <h6>PDF Format</h6>
+                            <p class="text-muted small">Human-readable reports with visualizations and charts</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 border rounded">
+                            <i class="fas fa-file-csv fa-2x text-success mb-2"></i>
+                            <h6>CSV Format</h6>
+                            <p class="text-muted small">Tabular data format for spreadsheet analysis</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Load available reports (this would typically be populated from a backend endpoint)
+document.addEventListener('DOMContentLoaded', function() {
+    loadReports();
+});
+
+function loadReports() {
+    // In a real implementation, this would fetch from an API endpoint
+    // For now, we'll show a placeholder
+    console.log('Loading reports...');
+}
+
+function downloadReport(filename, format) {
+    window.open(`/reports/${filename}`, '_blank');
+}
+</script>
+{% endblock %}
