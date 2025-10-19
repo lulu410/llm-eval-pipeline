@@ -50,12 +50,16 @@ export GEMINI_API_KEY="your-gemini-api-key"
 - **API Documentation:** http://localhost:8000/api/docs - Interactive API docs
 
 ## ✨ New Features (v2.0.0)
+### 📊 Dashboard
+Main dashboard, http://localhost:8000/
+<img width="1434" height="724" alt="截屏2025-10-19 上午10 00 00" src="https://github.com/user-attachments/assets/95984716-453e-4bf8-9bdf-2159f87019f5" />
 
 ### 🔧 Dynamic Rubrics
 Create and manage evaluation criteria without code changes via web interface.
 - **Setup:** Configure rubrics through web UI at `/rubrics`
 - **URL:** http://localhost:8000/rubrics
 - **API:** `POST /api/rubrics` for programmatic creation
+<img width="1446" height="716" alt="截屏2025-10-19 上午10 00 26" src="https://github.com/user-attachments/assets/2ea60333-48d6-4f98-af92-2198affa3440" />
 
 ### 🎨 Multimodal Support  
 Evaluate text, images, videos, and audio submissions with AI-powered analysis.
@@ -63,6 +67,10 @@ Evaluate text, images, videos, and audio submissions with AI-powered analysis.
 - **URL:** http://localhost:8000/evaluate  
 - **Supported:** JPG, PNG, MP4, MP3, WAV, AVI
 - **API:** `POST /api/submissions` for file uploads
+- Select model
+<img width="1007" height="382" alt="截屏2025-10-19 上午10 29 08" src="https://github.com/user-attachments/assets/fefdd041-0a73-461e-85e0-49d97fabfa5e" />
+Get result
+<img width="1398" height="713" alt="截屏2025-10-19 上午10 25 48" src="https://github.com/user-attachments/assets/0ed71b90-6406-4258-b26d-ea97f280cf22" />
 
 ### 🤖 Backend Integration
 GPT-4V, Gemini Pro Vision, and deterministic evaluation modes.
