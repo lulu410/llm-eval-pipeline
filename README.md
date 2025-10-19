@@ -5,13 +5,6 @@ Independent, policy-aligned LLM evaluation pipeline — reproducibility &amp; la
 
 Enhanced open-source pipeline for **reliable, reproducible** LLM evaluation with advanced features:
 
-## ✨ New Features (v2.0.0)
-- **🔧 Dynamic Rubrics:** Create and manage evaluation criteria without code changes
-- **🎨 Multimodal Support:** Evaluate text, images, videos, and audio submissions  
-- **🤖 Backend Integration:** GPT-4V, Gemini Pro Vision, and deterministic evaluation modes
-- **📊 Structured Reports:** JSON, PDF, and CSV export with detailed analytics
-- **⚡ Batch Processing:** Efficient evaluation of multiple submissions
-- **🌐 Web Interface:** User-friendly UI for rubric management and evaluation
 
 ## 🏗️ Core Features
 - **Deterministic:** Results depend only on `config.yaml` + `examples/input.jsonl` (no external APIs).
@@ -40,8 +33,63 @@ python enhanced_main.py demo
 python enhanced_main.py serve --host 0.0.0.0 --port 8000
 ```
 
-**Web Interface:** http://localhost:8000  
-**API Documentation:** http://localhost:8000/api/docs
+**Setup for AI Models (Optional):**
+```bash
+# Configure OpenAI API key for GPT-4V
+export OPENAI_API_KEY="sk-your-openai-api-key"
+
+# Configure Gemini API key for Gemini Pro Vision  
+export GEMINI_API_KEY="your-gemini-api-key"
+```
+
+**Web Interface Access:**
+- **Dashboard:** http://localhost:8000/ - Main interface
+- **Create Rubrics:** http://localhost:8000/rubrics - Dynamic rubric management
+- **Evaluate Submissions:** http://localhost:8000/evaluate - Multimodal evaluation
+- **View Reports:** http://localhost:8000/reports - Generated reports
+- **API Documentation:** http://localhost:8000/api/docs - Interactive API docs
+
+## ✨ New Features (v2.0.0)
+
+### 🔧 Dynamic Rubrics
+Create and manage evaluation criteria without code changes via web interface.
+- **Setup:** Configure rubrics through web UI at `/rubrics`
+- **URL:** http://localhost:8000/rubrics
+- **API:** `POST /api/rubrics` for programmatic creation
+
+### 🎨 Multimodal Support  
+Evaluate text, images, videos, and audio submissions with AI-powered analysis.
+- **Setup:** Upload files via evaluation interface
+- **URL:** http://localhost:8000/evaluate  
+- **Supported:** JPG, PNG, MP4, MP3, WAV, AVI
+- **API:** `POST /api/submissions` for file uploads
+
+### 🤖 Backend Integration
+GPT-4V, Gemini Pro Vision, and deterministic evaluation modes.
+- **Setup:** Configure API keys in `src/api.py` (MODEL_CONFIG)
+- **Environment Variables:** `OPENAI_API_KEY`, `GEMINI_API_KEY`
+- **API:** `POST /api/evaluate` with `model_provider` parameter
+
+### 📊 Structured Reports
+JSON, PDF, and CSV export with detailed analytics and audit trails.
+- **Setup:** Reports auto-generated after evaluation
+- **URL:** http://localhost:8000/reports
+- **API:** `POST /api/reports/generate` for custom reports
+
+### ⚡ Batch Processing
+Efficient evaluation of multiple submissions simultaneously.
+- **Setup:** Use batch API endpoint for multiple submissions
+- **API:** `POST /api/evaluate/batch` with submission array
+
+### 🌐 Web Interface
+User-friendly UI for rubric management, evaluation, and results viewing.
+- **Setup:** Start web server with `python enhanced_main.py serve`
+- **URLs:** 
+  - Dashboard: http://localhost:8000/
+  - Rubrics: http://localhost:8000/rubrics
+  - Evaluate: http://localhost:8000/evaluate  
+  - Reports: http://localhost:8000/reports
+  - API Docs: http://localhost:8000/api/docs
 
 **Usage Examples:** See `examples/enhanced_usage.py` for detailed code examples
 
