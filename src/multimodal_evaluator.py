@@ -60,7 +60,8 @@ class MultimodalEvaluator:
             criterion_scores=result["criterion_scores"],
             processing_time_ms=processing_time,
             input_sha256=input_sha256,
-            config_sha256=config_sha256
+            config_sha256=config_sha256,
+            fallback_reason=result.get("fallback_reason")
         )
     
     async def _evaluate_deterministic(
@@ -111,6 +112,17 @@ class MultimodalEvaluator:
         rubric: DynamicRubric
     ) -> Dict[str, Any]:
         """Evaluate using OpenAI GPT-4V."""
+        # Check if API key is configured
+        api_key = self.model_config.get("api_key")
+        if not api_key or api_key == "your-openai-api-key":
+            print("OpenAI API key not configured. Falling back to deterministic evaluation.")
+            result = await self._evaluate_deterministic(submission, rubric)
+            # Update the result to indicate fallback
+            for score in result["criterion_scores"]:
+                score.feedback = f"No OpenAI API key configured. {score.feedback}"
+            result["fallback_reason"] = "openai_api_key_missing"
+            return result
+            
         try:
             # Prepare messages for OpenAI API
             messages = [{
@@ -161,7 +173,7 @@ Provide detailed scores and feedback for each criterion."""
             client = openai.AsyncOpenAI(api_key=self.model_config.get("api_key"))
             
             response = await client.chat.completions.create(
-                model="gpt-4-vision-preview",
+                model="gpt-4o",  # Updated to use the latest GPT-4 model that supports vision
                 messages=messages,
                 max_tokens=2000,
                 temperature=0.1  # Low temperature for consistency
@@ -176,7 +188,12 @@ Provide detailed scores and feedback for each criterion."""
         except Exception as e:
             # Fallback to deterministic evaluation
             print(f"OpenAI evaluation failed: {e}. Falling back to deterministic.")
-            return await self._evaluate_deterministic(submission, rubric)
+            result = await self._evaluate_deterministic(submission, rubric)
+            # Update the result to indicate fallback
+            for score in result["criterion_scores"]:
+                score.feedback = f"OpenAI API error: {str(e)[:100]}... {score.feedback}"
+            result["fallback_reason"] = "openai_api_error"
+            return result
     
     async def _evaluate_gemini(
         self, 
@@ -184,10 +201,21 @@ Provide detailed scores and feedback for each criterion."""
         rubric: DynamicRubric
     ) -> Dict[str, Any]:
         """Evaluate using Google Gemini Pro Vision."""
+        # Check if API key is configured
+        api_key = self.model_config.get("api_key")
+        if not api_key or api_key == "your-gemini-api-key":
+            print("Gemini API key not configured. Falling back to deterministic evaluation.")
+            result = await self._evaluate_deterministic(submission, rubric)
+            # Update the result to indicate fallback
+            for score in result["criterion_scores"]:
+                score.feedback = f"No Gemini API key configured. {score.feedback}"
+            result["fallback_reason"] = "gemini_api_key_missing"
+            return result
+            
         try:
             import google.generativeai as genai
             
-            genai.configure(api_key=self.model_config.get("api_key"))
+            genai.configure(api_key=api_key)
             model = genai.GenerativeModel('gemini-pro-vision')
             
             # Prepare the prompt
@@ -228,7 +256,12 @@ Provide detailed scores and feedback for each criterion."""
         except Exception as e:
             # Fallback to deterministic evaluation
             print(f"Gemini evaluation failed: {e}. Falling back to deterministic.")
-            return await self._evaluate_deterministic(submission, rubric)
+            result = await self._evaluate_deterministic(submission, rubric)
+            # Update the result to indicate fallback
+            for score in result["criterion_scores"]:
+                score.feedback = f"Gemini API error: {str(e)[:100]}... {score.feedback}"
+            result["fallback_reason"] = "gemini_api_error"
+            return result
     
     def _format_criteria_for_prompt(self, criteria: List[Any]) -> str:
         """Format criteria for inclusion in model prompts."""

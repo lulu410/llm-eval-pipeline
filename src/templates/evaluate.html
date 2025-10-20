@@ -69,11 +69,11 @@
                         </label>
                         <select class="form-select" id="model_provider" name="model_provider">
                             <option value="deterministic">Deterministic (Reproducible Baseline)</option>
-                            <option value="openai">🤖 OpenAI GPT-4V (Multimodal AI)</option>
+                            <option value="openai">🤖 OpenAI GPT-4 Vision (Multimodal AI)</option>
                             <option value="google_gemini">🤖 Google Gemini Pro Vision (Multimodal AI)</option>
                         </select>
                         <div class="form-text">
-                            <strong>Multimodal Models:</strong> GPT-4V and Gemini Pro Vision can analyze both text and visual content together
+                            <strong>Multimodal Models:</strong> GPT-4 Vision and Gemini Pro Vision can analyze both text and visual content together
                         </div>
                     </div>
 
@@ -165,15 +165,32 @@ document.getElementById('evaluationForm').addEventListener('submit', async funct
         const result = await evaluationResponse.json();
         
         // Display results
-        statusArea.innerHTML = '<p class="text-success"><i class="fas fa-check-circle"></i> Evaluation completed!</p>';
+        const isFallback = result.fallback_reason;
+        const statusClass = isFallback ? 'warning' : (result.passed ? 'success' : 'warning');
+        const statusIcon = isFallback ? 'fas fa-exclamation-triangle' : (result.passed ? 'fas fa-check-circle' : 'fas fa-times-circle');
+        const statusText = isFallback ? 'Evaluation completed (with fallback)' : 'Evaluation completed!';
+        
+        statusArea.innerHTML = `<p class="text-${statusClass}"><i class="${statusIcon}"></i> ${statusText}</p>`;
+        
+        if (isFallback) {
+            const fallbackMessage = result.fallback_reason === 'openai_api_key_missing' ? 
+                'OpenAI API key not configured. Using deterministic evaluation.' :
+                result.fallback_reason === 'gemini_api_key_missing' ? 
+                'Gemini API key not configured. Using deterministic evaluation.' :
+                'API error occurred. Using deterministic evaluation.';
+            
+            statusArea.innerHTML += `<div class="alert alert-info mt-2"><small><i class="fas fa-info-circle"></i> ${fallbackMessage}</small></div>`;
+        }
+        
         resultArea.style.display = 'block';
         resultArea.innerHTML = `
-            <div class="alert alert-${result.passed ? 'success' : 'warning'}" role="alert">
+            <div class="alert alert-${statusClass}" role="alert">
                 <h6 class="alert-heading">
                     Overall Score: <strong>${result.overall_score.toFixed(2)}/10</strong>
                     <span class="badge bg-${result.passed ? 'success' : 'danger'} ms-2">
                         ${result.passed ? 'PASSED' : 'FAILED'}
                     </span>
+                    ${isFallback ? '<span class="badge bg-warning ms-2">FALLBACK</span>' : ''}
                 </h6>
                 <p class="mb-2">Processing time: ${result.processing_time_ms}ms</p>
                 <hr>

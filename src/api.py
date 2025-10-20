@@ -5,6 +5,7 @@ backend model integration, and structured report generation.
 """
 
 import json
+import os
 import uuid
 import base64
 from typing import List, Dict, Any, Optional
@@ -45,10 +46,10 @@ app.add_middleware(
 rubric_manager = RubricManager()
 report_generator = ReportGenerator()
 
-# Global model configuration (in production, this should come from environment variables)
+# Global model configuration - loads API keys from environment variables
 MODEL_CONFIG = {
-    "openai": {"api_key": "your-openai-api-key"},
-    "google_gemini": {"api_key": "your-gemini-api-key"}
+    "openai": {"api_key": os.getenv("OPENAI_API_KEY", "your-openai-api-key")},
+    "google_gemini": {"api_key": os.getenv("GEMINI_API_KEY", "your-gemini-api-key")}
 }
 
 

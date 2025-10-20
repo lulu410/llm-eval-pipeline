@@ -102,6 +102,7 @@ class EvaluationResult(BaseModel):
     processing_time_ms: int = Field(description="Time taken to evaluate in milliseconds")
     input_sha256: str = Field(description="SHA256 hash of input for provenance")
     config_sha256: str = Field(description="SHA256 hash of config for provenance")
+    fallback_reason: Optional[str] = Field(None, description="Reason for fallback to deterministic evaluation")
 
 
 class BatchEvaluationRequest(BaseModel):
