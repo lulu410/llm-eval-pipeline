@@ -19,19 +19,18 @@
 #
 from __future__ import annotations
 
+import itertools
 import os
 import struct
-from typing import IO, Any, cast
+from typing import IO
 
 from . import (
     Image,
-    ImageFile,
     ImageSequence,
     JpegImagePlugin,
     TiffImagePlugin,
 )
 from ._binary import o32le
-from ._util import DeferredError
 
 
 def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
@@ -46,18 +45,12 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     mpf_offset = 28
     offsets: list[int] = []
-    im_sequences = [im, *append_images]
-    total = sum(getattr(seq, "n_frames", 1) for seq in im_sequences)
-    for im_sequence in im_sequences:
-        for im_frame in ImageSequence.Iterator(im_sequence):
+    for imSequence in itertools.chain([im], append_images):
+        for im_frame in ImageSequence.Iterator(imSequence):
             if not offsets:
                 # APP2 marker
-                ifd_length = 66 + 16 * total
                 im_frame.encoderinfo["extra"] = (
-                    b"\xff\xe2"
-                    + struct.pack(">H", 6 + ifd_length)
-                    + b"MPF\0"
-                    + b" " * ifd_length
+                    b"\xFF\xE2" + struct.pack(">H", 6 + 82) + b"MPF\0" + b" " * 82
                 )
                 exif = im_frame.encoderinfo.get("exif")
                 if isinstance(exif, Image.Exif):
@@ -69,9 +62,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
                 JpegImagePlugin._save(im_frame, fp, filename)
                 offsets.append(fp.tell())
             else:
-                encoderinfo = im_frame._attach_default_encoderinfo(im)
                 im_frame.save(fp, "JPEG")
-                im_frame.encoderinfo = encoderinfo
                 offsets.append(fp.tell() - offsets[-1])
 
     ifd = TiffImagePlugin.ImageFileDirectory_v2()
@@ -92,7 +83,7 @@ def _save_all(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     ifd[0xB002] = mpentries
 
     fp.seek(mpf_offset)
-    fp.write(b"II\x2a\x00" + o32le(8) + ifd.tobytes(8))
+    fp.write(b"II\x2A\x00" + o32le(8) + ifd.tobytes(8))
     fp.seek(0, os.SEEK_END)
 
 
@@ -110,11 +101,8 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         JpegImagePlugin.JpegImageFile._open(self)
         self._after_jpeg_open()
 
-    def _after_jpeg_open(self, mpheader: dict[int, Any] | None = None) -> None:
+    def _after_jpeg_open(self, mpheader=None):
         self.mpinfo = mpheader if mpheader is not None else self._getmp()
-        if self.mpinfo is None:
-            msg = "Image appears to be a malformed MPO file"
-            raise ValueError(msg)
         self.n_frames = self.mpinfo[0xB001]
         self.__mpoffsets = [
             mpent["DataOffset"] + self.info["mpoffset"] for mpent in self.mpinfo[0xB002]
@@ -133,15 +121,11 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         self.readonly = 1
 
     def load_seek(self, pos: int) -> None:
-        if isinstance(self._fp, DeferredError):
-            raise self._fp.ex
         self._fp.seek(pos)
 
     def seek(self, frame: int) -> None:
         if not self._seek_check(frame):
             return
-        if isinstance(self._fp, DeferredError):
-            raise self._fp.ex
         self.fp = self._fp
         self.offset = self.__mpoffsets[frame]
 
@@ -158,19 +142,14 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         if self.info.get("exif") != original_exif:
             self._reload_exif()
 
-        self.tile = [
-            ImageFile._Tile("jpeg", (0, 0) + self.size, self.offset, self.tile[0][-1])
-        ]
+        self.tile = [("jpeg", (0, 0) + self.size, self.offset, self.tile[0][-1])]
         self.__frame = frame
 
     def tell(self) -> int:
         return self.__frame
 
     @staticmethod
-    def adopt(
-        jpeg_instance: JpegImagePlugin.JpegImageFile,
-        mpheader: dict[int, Any] | None = None,
-    ) -> MpoImageFile:
+    def adopt(jpeg_instance, mpheader=None):
         """
         Transform the instance of JpegImageFile into
         an instance of MpoImageFile.
@@ -182,9 +161,8 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
         double call to _open.
         """
         jpeg_instance.__class__ = MpoImageFile
-        mpo_instance = cast(MpoImageFile, jpeg_instance)
-        mpo_instance._after_jpeg_open(mpheader)
-        return mpo_instance
+        jpeg_instance._after_jpeg_open(mpheader)
+        return jpeg_instance
 
 
 # ---------------------------------------------------------------------

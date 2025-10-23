@@ -1,6 +1,6 @@
 {
   "report_metadata": {
-    "generated_at": "2025-10-18T18:04:18.472766",
+    "generated_at": "2025-10-23T18:58:37.428930",
     "rubric_id": "sample_multimodal_rubric",
     "rubric_name": "Sample Multimodal Evaluation Rubric",
     "total_submissions": 1,
@@ -65,10 +65,11 @@
           "reasoning": "Hash-based deterministic scoring for reproducibility."
         }
       ],
-      "evaluated_at": "2025-10-18T18:04:18.472681",
-      "processing_time_ms": 0,
-      "input_sha256": "2ee56812d745baafb3ccd94648fca104854d03491ce0436d11919e6863e6ac98",
-      "config_sha256": "a961f8b2a0ff8174c0537400ce430fc859c5e6db3325a6d388fa393b183a2b75"
+      "evaluated_at": "2025-10-23T18:58:37.428808",
+      "processing_time_ms": 2,
+      "input_sha256": "e01ea7540ced17b738a37f1cafdc65d4d9fa7e1f690aa31a8e0eca76557115d4",
+      "config_sha256": "a961f8b2a0ff8174c0537400ce430fc859c5e6db3325a6d388fa393b183a2b75",
+      "fallback_reason": null
     }
   ]
 }

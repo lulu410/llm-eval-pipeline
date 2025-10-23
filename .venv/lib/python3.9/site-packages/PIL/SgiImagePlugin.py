@@ -82,10 +82,17 @@ class SgiImageFile(ImageFile.ImageFile):
         # zsize : channels count
         zsize = i16(s, 10)
 
+        # layout
+        layout = bpc, dimension, zsize
+
         # determine mode from bits/zsize
+        rawmode = ""
         try:
-            rawmode = MODES[(bpc, dimension, zsize)]
+            rawmode = MODES[layout]
         except KeyError:
+            pass
+
+        if rawmode == "":
             msg = "Unsupported SGI image mode"
             raise ValueError(msg)
 
@@ -102,28 +109,19 @@ class SgiImageFile(ImageFile.ImageFile):
             pagesize = xsize * ysize * bpc
             if bpc == 2:
                 self.tile = [
-                    ImageFile._Tile(
-                        "SGI16",
-                        (0, 0) + self.size,
-                        headlen,
-                        (self.mode, 0, orientation),
-                    )
+                    ("SGI16", (0, 0) + self.size, headlen, (self.mode, 0, orientation))
                 ]
             else:
                 self.tile = []
                 offset = headlen
                 for layer in self.mode:
                     self.tile.append(
-                        ImageFile._Tile(
-                            "raw", (0, 0) + self.size, offset, (layer, 0, orientation)
-                        )
+                        ("raw", (0, 0) + self.size, offset, (layer, 0, orientation))
                     )
                     offset += pagesize
         elif compression == 1:
             self.tile = [
-                ImageFile._Tile(
-                    "sgi_rle", (0, 0) + self.size, headlen, (rawmode, orientation, bpc)
-                )
+                ("sgi_rle", (0, 0) + self.size, headlen, (rawmode, orientation, bpc))
             ]
 
 
@@ -149,15 +147,24 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # Run-Length Encoding Compression - Unsupported at this time
     rle = 0
 
+    # Number of dimensions (x,y,z)
+    dim = 3
     # X Dimension = width / Y Dimension = height
     x, y = im.size
+    if im.mode == "L" and y == 1:
+        dim = 1
+    elif im.mode == "L":
+        dim = 2
     # Z Dimension: Number of channels
     z = len(im.mode)
-    # Number of dimensions (x,y,z)
-    if im.mode == "L":
-        dimension = 1 if y == 1 else 2
-    else:
-        dimension = 3
+
+    if dim in {1, 2}:
+        z = 1
+
+    # assert we've got the right number of bands.
+    if len(im.getbands()) != z:
+        msg = f"incorrect number of bands in SGI write: {z} vs {len(im.getbands())}"
+        raise ValueError(msg)
 
     # Minimum Byte value
     pinmin = 0
@@ -172,7 +179,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.write(struct.pack(">h", magic_number))
     fp.write(o8(rle))
     fp.write(o8(bpc))
-    fp.write(struct.pack(">H", dimension))
+    fp.write(struct.pack(">H", dim))
     fp.write(struct.pack(">H", x))
     fp.write(struct.pack(">H", y))
     fp.write(struct.pack(">H", z))
@@ -198,7 +205,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 class SGI16Decoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
-    def decode(self, buffer: bytes | Image.SupportsArrayInterface) -> tuple[int, int]:
+    def decode(self, buffer: bytes) -> tuple[int, int]:
         assert self.fd is not None
         assert self.im is not None
 

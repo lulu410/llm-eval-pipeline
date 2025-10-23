@@ -23,7 +23,7 @@ from . import Image, ImageFile
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix.startswith(b"\x00\x00\x00\x00\x00\x00\x00\x04")
+    return prefix[:8] == b"\x00\x00\x00\x00\x00\x00\x00\x04"
 
 
 ##
@@ -44,13 +44,15 @@ class McIdasImageFile(ImageFile.ImageFile):
             raise SyntaxError(msg)
 
         self.area_descriptor_raw = s
-        self.area_descriptor = w = [0, *struct.unpack("!64i", s)]
+        self.area_descriptor = w = [0] + list(struct.unpack("!64i", s))
 
         # get mode
         if w[11] == 1:
             mode = rawmode = "L"
         elif w[11] == 2:
-            mode = rawmode = "I;16B"
+            # FIXME: add memory map support
+            mode = "I"
+            rawmode = "I;16B"
         elif w[11] == 4:
             # FIXME: add memory map support
             mode = "I"
@@ -65,9 +67,7 @@ class McIdasImageFile(ImageFile.ImageFile):
         offset = w[34] + w[15]
         stride = w[15] + w[10] * w[11] * w[14]
 
-        self.tile = [
-            ImageFile._Tile("raw", (0, 0) + self.size, offset, (rawmode, stride, 1))
-        ]
+        self.tile = [("raw", (0, 0) + self.size, offset, (rawmode, stride, 1))]
 
 
 # --------------------------------------------------------------------

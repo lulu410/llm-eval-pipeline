@@ -33,7 +33,11 @@ class BitStream:
 
     def peek(self, bits: int) -> int:
         while self.bits < bits:
-            self.bitbuffer = (self.bitbuffer << 8) + self.next()
+            c = self.next()
+            if c < 0:
+                self.bits = 0
+                continue
+            self.bitbuffer = (self.bitbuffer << 8) + c
             self.bits += 8
         return self.bitbuffer >> (self.bits - bits) & (1 << bits) - 1
 
@@ -50,7 +54,7 @@ class BitStream:
 
 
 def _accept(prefix: bytes) -> bool:
-    return prefix.startswith(b"\x00\x00\x01\xb3")
+    return prefix[:4] == b"\x00\x00\x01\xb3"
 
 
 ##

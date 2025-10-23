@@ -3,13 +3,65 @@
 **Deterministic, reproducible evaluation with verifiable artifacts**  
 Aligned with U.S. EO 14110 and NIST AI RMF framework.
 
-## Run in 60 Seconds
+## 🚀 How to Run This Demo
 
-1. **Click the Space** - The demo is ready to run
-2. **Enter text** - Use the sample text or provide your own
-3. **Configure settings** (optional) - Adjust seed, runs, thresholds
-4. **Run Evaluation** - Get deterministic results instantly
-5. **Download artifacts** - JSON, PDF, and verification hashes
+### Option 1: Live Demo (Recommended)
+1. **Visit**: https://huggingface.co/spaces/madison-xu/llm-eval-pipeline
+2. **Wait for loading** (30-60 seconds)
+3. **Enter text** in the text box (sample text is pre-filled)
+4. **Click "Run Evaluation"** (blue button)
+5. **Download** JSON and PDF reports
+
+### Option 2: Run the Enhanced Pipeline
+```bash
+# Clone the repository
+git clone https://github.com/lulu410/llm-eval-pipeline.git
+cd llm-eval-pipeline
+
+# Install ALL dependencies (one command)
+pip install -r requirements.txt
+
+# Start the web server
+python3 enhanced_main.py serve
+
+# Access the full interface at http://localhost:8000
+```
+
+## 📖 Detailed Usage Instructions
+
+### For the Hugging Face Space Demo:
+
+1. **Text Input**:
+   - Type your text in the large text area
+   - Or click "Upload File" to upload a text/image file
+   - Sample text is pre-filled for testing
+
+2. **Optional Configuration**:
+   - **Organization Name**: Your company name (appears in reports)
+   - **DOI**: Digital Object Identifier (creates QR code in PDF)
+   - **Seed**: Random seed for reproducibility (default: 20251020)
+   - **Runs**: Number of evaluation runs (default: 5)
+   - **Reproducibility Threshold**: Minimum score to pass (default: 0.90)
+   - **Variance Threshold**: Maximum variance ratio (default: 0.05)
+
+3. **Run Evaluation**:
+   - Click the **"Run Evaluation"** button
+   - Wait 1-2 seconds for processing
+   - Results appear below
+
+4. **View Results**:
+   - **JSON Preview**: See all metrics in the interface
+   - **Verification Hash**: SHA256 hash for verification
+   - **Download JSON**: Complete results.json file
+   - **Download PDF**: Professional report.pdf
+
+### For the Enhanced Pipeline:
+
+1. **Start the server**: `python enhanced_main.py serve`
+2. **Access dashboard**: http://localhost:8000/
+3. **Create rubrics**: http://localhost:8000/rubrics/create
+4. **Evaluate submissions**: http://localhost:8000/evaluate
+5. **View reports**: http://localhost:8000/reports
 
 ## What's Different
 
