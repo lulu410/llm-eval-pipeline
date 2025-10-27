@@ -1,0 +1,44 @@
+{
+  "id": "video_content",
+  "name": "Video Content Evaluation",
+  "description": "Rubric for evaluating video content and multimedia submissions",
+  "criteria": [
+    {
+      "name": "Visual Storytelling",
+      "description": "Effectiveness of visual narrative and story flow",
+      "weight": 0.25,
+      "threshold": 6.0,
+      "category": "Narrative"
+    },
+    {
+      "name": "Production Quality",
+      "description": "Video quality, editing, and technical execution",
+      "weight": 0.25,
+      "threshold": 6.0,
+      "category": "Production"
+    },
+    {
+      "name": "Audio Integration",
+      "description": "Sound design, music, and audio-visual harmony",
+      "weight": 0.2,
+      "threshold": 5.5,
+      "category": "Audio"
+    },
+    {
+      "name": "Pacing & Rhythm",
+      "description": "Tempo, rhythm, and overall flow of the video",
+      "weight": 0.15,
+      "threshold": 5.5,
+      "category": "Timing"
+    },
+    {
+      "name": "Creative Vision",
+      "description": "Originality and creative expression in the work",
+      "weight": 0.15,
+      "threshold": 5.0,
+      "category": "Creativity"
+    }
+  ],
+  "created_at": "2025-10-25T01:06:16.012758",
+  "updated_at": "2025-10-25T01:06:16.012758"
+}

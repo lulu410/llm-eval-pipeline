@@ -6,11 +6,11 @@ Aligned with U.S. EO 14110 and NIST AI RMF framework.
 ## 🚀 How to Run This Demo
 
 ### Option 1: Live Demo (Recommended)
-1. **Visit**: https://huggingface.co/spaces/madison-xu/llm-eval-pipeline
+1. **Visit**: https://huggingface.co/spaces/madison-xu/llm-eval-pipeline-art
 2. **Wait for loading** (30-60 seconds)
-3. **Enter text** in the text box (sample text is pre-filled)
+3. **Enter text and photo** in the text box
 4. **Click "Run Evaluation"** (blue button)
-5. **Download** JSON and PDF reports
+5. **Download** JSON reports
 
 ### Option 2: Run the Enhanced Pipeline
 ```bash

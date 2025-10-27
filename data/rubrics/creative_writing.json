@@ -1,0 +1,44 @@
+{
+  "id": "creative_writing",
+  "name": "Creative Writing Evaluation",
+  "description": "Rubric for evaluating creative writing and storytelling",
+  "criteria": [
+    {
+      "name": "Narrative Structure",
+      "description": "Plot development, pacing, and story organization",
+      "weight": 0.25,
+      "threshold": 6.0,
+      "category": "Structure"
+    },
+    {
+      "name": "Character Development",
+      "description": "Character depth, motivation, and believability",
+      "weight": 0.2,
+      "threshold": 5.5,
+      "category": "Characterization"
+    },
+    {
+      "name": "Writing Style",
+      "description": "Prose quality, voice, and literary techniques",
+      "weight": 0.2,
+      "threshold": 6.0,
+      "category": "Style"
+    },
+    {
+      "name": "Imagination",
+      "description": "Creative ideas, world-building, and originality",
+      "weight": 0.2,
+      "threshold": 5.5,
+      "category": "Creativity"
+    },
+    {
+      "name": "Emotional Resonance",
+      "description": "Ability to connect with readers emotionally",
+      "weight": 0.15,
+      "threshold": 5.0,
+      "category": "Impact"
+    }
+  ],
+  "created_at": "2025-10-25T01:06:16.012747",
+  "updated_at": "2025-10-25T01:06:16.012747"
+}

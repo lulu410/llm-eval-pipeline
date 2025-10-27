@@ -17,7 +17,7 @@ import numpy as np
 
 from .models import (
     MultimodalSubmission, EvaluationResult, CriterionScore, 
-    ModelProvider, DynamicRubric, MediaType
+    ModelProvider, DynamicRubric, MediaType, MultiRubricEvaluationResult
 )
 
 
@@ -62,6 +62,37 @@ class MultimodalEvaluator:
             input_sha256=input_sha256,
             config_sha256=config_sha256,
             fallback_reason=result.get("fallback_reason")
+        )
+    
+    async def evaluate_submission_multi_rubric(
+        self, 
+        submission: MultimodalSubmission, 
+        rubrics: List[DynamicRubric],
+        model_provider: ModelProvider
+    ) -> MultiRubricEvaluationResult:
+        """Evaluate a submission against multiple rubrics."""
+        start_time = time.time()
+        rubric_results = []
+        
+        # Evaluate against each rubric
+        for rubric in rubrics:
+            result = await self.evaluate_submission(submission, rubric, model_provider)
+            rubric_results.append(result)
+        
+        # Calculate overall statistics
+        overall_scores = [result.overall_score for result in rubric_results]
+        overall_average_score = sum(overall_scores) / len(overall_scores) if overall_scores else 0.0
+        overall_passed = all(result.passed for result in rubric_results)
+        total_processing_time = int((time.time() - start_time) * 1000)
+        
+        return MultiRubricEvaluationResult(
+            submission_id=submission.id,
+            submission_title=submission.title,
+            submission_description=submission.description,
+            rubric_results=rubric_results,
+            overall_average_score=overall_average_score,
+            overall_passed=overall_passed,
+            total_processing_time_ms=total_processing_time
         )
     
     async def _evaluate_deterministic(
@@ -216,10 +247,10 @@ Provide detailed scores and feedback for each criterion."""
             import google.generativeai as genai
             
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-pro-vision')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             
             # Prepare the prompt
-            prompt = f"""Evaluate this submission using the following rubric:
+            prompt = f"""You are an expert digital art evaluator. Please evaluate this submission using the following rubric:
 
 Rubric: {rubric.name}
 Description: {rubric.description}
@@ -227,7 +258,15 @@ Description: {rubric.description}
 Criteria:
 {self._format_criteria_for_prompt(rubric.criteria)}
 
-Provide detailed scores and feedback for each criterion."""
+IMPORTANT: For each criterion, provide:
+1. A score from 0-10 (be specific, not just 5.0)
+2. BRIEF reasoning (max 20 words) explaining WHY you gave this score
+3. Constructive feedback for improvement
+
+Format your response EXACTLY as follows:
+{chr(10).join([f"{criterion.name}: X.X/10{chr(10)}REASONING: [Brief explanation in max 20 words]{chr(10)}FEEDBACK: [Specific suggestions]{chr(10)}" for criterion in rubric.criteria])}
+
+Be concise but insightful. Focus on the most important aspects of each criterion."""
 
             # Prepare content parts
             content_parts = [prompt]
@@ -279,31 +318,49 @@ Provide detailed scores and feedback for each criterion."""
         rubric: DynamicRubric
     ) -> Dict[str, Any]:
         """Parse model response into structured evaluation results."""
-        # This is a simplified parser - in practice, you'd want more sophisticated parsing
         criterion_scores = []
-        
-        # Try to extract scores from response
-        # This is a basic implementation - you'd want to use more sophisticated parsing
         import re
         
         for criterion in rubric.criteria:
-            # Look for score in response
-            pattern = rf"{re.escape(criterion.name)}.*?(\d+(?:\.\d+)?)/10"
-            match = re.search(pattern, response, re.IGNORECASE | re.DOTALL)
+            # Look for detailed score format: CRITERION_NAME: X.X/10
+            pattern = rf"{re.escape(criterion.name)}:\s*(\d+(?:\.\d+)?)/10"
+            match = re.search(pattern, response, re.IGNORECASE)
             
             if match:
                 score = float(match.group(1))
+                
+                # Extract reasoning and feedback
+                reasoning_pattern = rf"{re.escape(criterion.name)}.*?REASONING:\s*([^\n]+(?:\n(?!FEEDBACK:)[^\n]+)*)"
+                reasoning_match = re.search(reasoning_pattern, response, re.IGNORECASE | re.DOTALL)
+                
+                feedback_pattern = rf"{re.escape(criterion.name)}.*?FEEDBACK:\s*([^\n]+(?:\n(?!CRITERION|$)[^\n]+)*)"
+                feedback_match = re.search(feedback_pattern, response, re.IGNORECASE | re.DOTALL)
+                
+                reasoning = reasoning_match.group(1).strip() if reasoning_match else f"AI evaluation based on {criterion.name}"
+                feedback = feedback_match.group(1).strip() if feedback_match else f"AI analysis of {criterion.name}"
+                
             else:
-                # Fallback to middle score
-                score = 5.0
+                # Fallback: look for simple score format
+                simple_pattern = rf"{re.escape(criterion.name)}.*?(\d+(?:\.\d+)?)/10"
+                simple_match = re.search(simple_pattern, response, re.IGNORECASE | re.DOTALL)
+                
+                if simple_match:
+                    score = float(simple_match.group(1))
+                    reasoning = f"AI evaluation based on {criterion.name}"
+                    feedback = f"Score: {score:.1f}/10"
+                else:
+                    # Ultimate fallback
+                    score = 5.0
+                    reasoning = f"No specific score found for {criterion.name}, using default"
+                    feedback = f"Default score: {score:.1f}/10"
             
             passed = score >= criterion.threshold
             
             criterion_scores.append(CriterionScore(
                 criterion_name=criterion.name,
                 score=score,
-                feedback=f"Evaluated by AI model. Score: {score:.1f}/10",
-                reasoning=response[:200] + "..." if len(response) > 200 else response
+                feedback=feedback,
+                reasoning=reasoning
             ))
         
         # Calculate overall weighted score

@@ -56,10 +56,12 @@ class MultimodalSubmission(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
     
     id: str = Field(description="Unique identifier for the submission")
-    rubric_id: str = Field(description="ID of the rubric to use for evaluation")
+    rubric_ids: List[str] = Field(description="List of rubric IDs to use for evaluation")
     media_items: List[MediaItem] = Field(description="List of media items in the submission")
     submitted_at: datetime = Field(default_factory=datetime.utcnow)
     batch_id: Optional[str] = Field(None, description="Batch ID for batch processing")
+    title: Optional[str] = Field(None, description="Title of the submission")
+    description: Optional[str] = Field(None, description="Description of the submission")
 
 
 class ModelProvider(str, Enum):
@@ -105,6 +107,20 @@ class EvaluationResult(BaseModel):
     fallback_reason: Optional[str] = Field(None, description="Reason for fallback to deterministic evaluation")
 
 
+class MultiRubricEvaluationResult(BaseModel):
+    """Results for evaluating a submission against multiple rubrics."""
+    model_config = ConfigDict(str_strip_whitespace=True)
+    
+    submission_id: str = Field(description="ID of the evaluated submission")
+    submission_title: Optional[str] = Field(None, description="Title of the submission")
+    submission_description: Optional[str] = Field(None, description="Description of the submission")
+    rubric_results: List[EvaluationResult] = Field(description="Results for each rubric")
+    overall_average_score: float = Field(description="Average score across all rubrics")
+    overall_passed: bool = Field(description="Whether submission passed all rubrics")
+    evaluated_at: datetime = Field(default_factory=datetime.utcnow)
+    total_processing_time_ms: int = Field(description="Total time for all evaluations")
+
+
 class BatchEvaluationRequest(BaseModel):
     """Request to evaluate multiple submissions in batch."""
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -120,9 +136,12 @@ class BatchEvaluationResult(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
     
     batch_id: str = Field(description="Batch identifier")
-    submission_results: List[EvaluationResult] = Field(description="Results for each submission")
+    submission_results: List[MultiRubricEvaluationResult] = Field(description="Results for each submission")
     batch_metadata: Dict[str, Any] = Field(default_factory=dict, description="Batch-level metadata")
     completed_at: datetime = Field(default_factory=datetime.utcnow)
+    total_submissions: int = Field(description="Total number of submissions processed")
+    successful_evaluations: int = Field(description="Number of successful evaluations")
+    failed_evaluations: int = Field(description="Number of failed evaluations")
 
 
 class ReportExportFormat(str, Enum):

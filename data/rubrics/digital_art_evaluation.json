@@ -1,0 +1,44 @@
+{
+  "id": "digital_art_evaluation",
+  "name": "Digital Art Evaluation",
+  "description": "Specialized rubric for digital and AI-generated artwork",
+  "criteria": [
+    {
+      "name": "Visual Composition",
+      "description": "Balance, harmony, and visual flow of the composition",
+      "weight": 0.3,
+      "threshold": 6.0,
+      "category": "Composition"
+    },
+    {
+      "name": "Color Harmony",
+      "description": "Effective use of color, contrast, and visual appeal",
+      "weight": 0.25,
+      "threshold": 5.5,
+      "category": "Color Theory"
+    },
+    {
+      "name": "Detail & Resolution",
+      "description": "Level of detail, resolution quality, and technical precision",
+      "weight": 0.2,
+      "threshold": 6.0,
+      "category": "Technical Quality"
+    },
+    {
+      "name": "Emotional Impact",
+      "description": "Ability to evoke emotions and create connection with viewer",
+      "weight": 0.15,
+      "threshold": 5.0,
+      "category": "Emotional Response"
+    },
+    {
+      "name": "Originality",
+      "description": "Uniqueness and creative originality of the work",
+      "weight": 0.1,
+      "threshold": 5.5,
+      "category": "Creativity"
+    }
+  ],
+  "created_at": "2025-10-25T01:06:16.012735",
+  "updated_at": "2025-10-25T01:06:16.012735"
+}
